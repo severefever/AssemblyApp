@@ -1,25 +1,13 @@
-﻿using PluginBase;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace AssemblyApp
 {
 	public class LoadInterface<T>
 	{
-		public string[] PluginsPaths { get; set; }
-		public LoadInterface(string[] pluginsPaths)
-		{
-			PluginsPaths = pluginsPaths;
-		}
-		public IEnumerable<T> GetObjects() 
-		{
-			IEnumerable<T> commands = PluginsPaths.SelectMany(pluginPath =>
-			{
-				Assembly pluginAssembly = LoadPlugin(pluginPath);
-				return CreateInstances(pluginAssembly);
-			}).ToList();
-			return commands;
-		}
-		private Assembly LoadPlugin(string relativePath)
+		private PluginLoadContext _plugin;
+		private Assembly _assembly;
+		public string PluginAbsolutePath { get; private set; }
+		public LoadInterface(string pluginPath)
 		{
 			// Navigate up to the solution root
 			string root = Path.GetFullPath(Path.Combine(
@@ -29,14 +17,14 @@ namespace AssemblyApp
 							Path.GetDirectoryName(
 								Path.GetDirectoryName(typeof(Program).Assembly.Location)))))));
 
-			string pluginLocation = Path.GetFullPath(Path.Combine(root, relativePath.Replace('\\', Path.DirectorySeparatorChar)));
-			PluginLoadContext loadContext = new PluginLoadContext(pluginLocation);
-			return loadContext.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(pluginLocation)));
+			PluginAbsolutePath = Path.GetFullPath(Path.Combine(root, pluginPath.Replace('\\', Path.DirectorySeparatorChar)));
+			_plugin = new PluginLoadContext(PluginAbsolutePath);
+			_assembly = _plugin.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(PluginAbsolutePath)));
 		}
-		private IEnumerable<T> CreateInstances(Assembly assembly)
+		public IEnumerable<T> CreateInstances()
 		{
 			int count = 0;
-			foreach (Type type in assembly.GetTypes())
+			foreach (Type type in _assembly.GetTypes())
 			{
 				if (typeof(T).IsAssignableFrom(type))
 				{
@@ -50,11 +38,12 @@ namespace AssemblyApp
 			}
 			if (count == 0)
 			{
-				string availableTypes = string.Join(",", assembly.GetTypes().Select(t => t.FullName));
+				string availableTypes = string.Join(",", _assembly.GetTypes().Select(t => t.FullName));
 				throw new ApplicationException(
-					$"Can't find any type which implements ICommand in {assembly} from {assembly.Location}.\n" +
+					$"Can't find any type which implements ICommand in {_assembly} from {_assembly.Location}.\n" +
 					$"Available types: {availableTypes}");
 			}
 		}
+
 	}
 }

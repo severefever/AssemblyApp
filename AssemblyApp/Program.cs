@@ -1,5 +1,6 @@
 ﻿using PluginBase;
 using System.Reflection;
+using System.Runtime.Loader;
 
 namespace AssemblyApp
 {
@@ -9,17 +10,17 @@ namespace AssemblyApp
 		{
 			try
 			{
-				string[] pluginPaths = new string[]
-				{
-					@"NoDependenciesTestApp\bin\Debug\net7.0\NoDependenciesTestApp.dll",
-					@"JsonTestApp\bin\Debug\net7.0\JsonTestApp.dll",
-					@"OldJsonTestApp\bin\Debug\net7.0\OldJsonTestApp.dll",
-				};
+				//string[] pluginPaths = new string[]
+				//{
+				//	@"NoDependenciesTestApp\bin\Debug\net7.0\NoDependenciesTestApp.dll",
+				//	@"JsonTestApp\bin\Debug\net7.0\JsonTestApp.dll",
+				//	@"OldJsonTestApp\bin\Debug\net7.0\OldJsonTestApp.dll",
+				//};
 
-				LoadInterface<ICommand> testPlugin = new LoadInterface<ICommand>(pluginPaths);
+				LoadInterface<ICommand> testPlugin = new LoadInterface<ICommand>(@"OldJsonTestApp\bin\Debug\net7.0\OldJsonTestApp.dll");
 
 				Console.WriteLine("Commands: ");
-				foreach (var command in testPlugin.GetObjects())
+				foreach (var command in testPlugin.CreateInstances())
 				{
 					command.Execute();
 				}
