@@ -17,10 +17,10 @@ namespace AssemblyApp
 				//	@"OldJsonTestApp\bin\Debug\net7.0\OldJsonTestApp.dll",
 				//};
 
-				LoadInterface<ICommand> testPlugin = new LoadInterface<ICommand>(@"OldJsonTestApp\bin\Debug\net7.0\OldJsonTestApp.dll");
+				LoadInterface testPlugin = new LoadInterface(@"OldJsonTestApp\bin\Debug\net7.0\OldJsonTestApp.dll");
 
 				Console.WriteLine("Commands: ");
-				foreach (var command in testPlugin.CreateInstances())
+				foreach (var command in testPlugin.CreateInstances<ICommand>())
 				{
 					command.Execute();
 				}

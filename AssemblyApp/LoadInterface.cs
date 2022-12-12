@@ -2,7 +2,7 @@
 
 namespace AssemblyApp
 {
-	public class LoadInterface<T>
+	public class LoadInterface
 	{
 		private PluginLoadContext _plugin;
 		private Assembly _assembly;
@@ -21,7 +21,7 @@ namespace AssemblyApp
 			_plugin = new PluginLoadContext(PluginAbsolutePath);
 			_assembly = _plugin.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(PluginAbsolutePath)));
 		}
-		public IEnumerable<T> CreateInstances()
+		public IEnumerable<T> CreateInstances<T>()
 		{
 			int count = 0;
 			foreach (Type type in _assembly.GetTypes())
