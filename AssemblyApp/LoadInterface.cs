@@ -1,30 +1,25 @@
-﻿using System.Reflection;
+﻿using System;
+using PluginBase;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace AssemblyApp
 {
 	public class LoadInterface
 	{
 		private PluginLoadContext _plugin;
-		private Assembly _assembly;
+		public Assembly Assembly { get; private set; }
 		public string PluginAbsolutePath { get; private set; }
 		public LoadInterface(string pluginPath)
 		{
-			// Navigate up to the solution root
-			string root = Path.GetFullPath(Path.Combine(
-				Path.GetDirectoryName(
-					Path.GetDirectoryName(
-						Path.GetDirectoryName(
-							Path.GetDirectoryName(
-								Path.GetDirectoryName(typeof(Program).Assembly.Location)))))));
-
-			PluginAbsolutePath = Path.GetFullPath(Path.Combine(root, pluginPath.Replace('\\', Path.DirectorySeparatorChar)));
+			PluginAbsolutePath = GetFullPath(pluginPath);
 			_plugin = new PluginLoadContext(PluginAbsolutePath);
-			_assembly = _plugin.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(PluginAbsolutePath)));
+			Assembly = _plugin.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(PluginAbsolutePath)));
 		}
 		public IEnumerable<T> CreateInstances<T>()
 		{
 			int count = 0;
-			foreach (Type type in _assembly.GetTypes())
+			foreach (Type type in Assembly.GetTypes())
 			{
 				if (typeof(T).IsAssignableFrom(type))
 				{
@@ -38,12 +33,27 @@ namespace AssemblyApp
 			}
 			if (count == 0)
 			{
-				string availableTypes = string.Join(",", _assembly.GetTypes().Select(t => t.FullName));
+				string availableTypes = string.Join(",", Assembly.GetTypes().Select(t => t.FullName));
 				throw new ApplicationException(
-					$"Can't find any type which implements ICommand in {_assembly} from {_assembly.Location}.\n" +
-					$"Available types: {availableTypes}");
+					$"Не найдено типа, который реализует данный интерфейс в {Assembly} из {Assembly.Location}.\n" +
+					$"Доступные типы: {availableTypes}");
 			}
 		}
+		public void Unload()
+		{
+			_plugin.Unload();
+		}
+		private string GetFullPath(string relativePath)
+		{
+			// Navigate up to the solution root
+			string root = Path.GetFullPath(Path.Combine(
+				Path.GetDirectoryName(
+					Path.GetDirectoryName(
+						Path.GetDirectoryName(
+							Path.GetDirectoryName(
+								Path.GetDirectoryName(typeof(Program).Assembly.Location)))))));
 
+			return Path.GetFullPath(Path.Combine(root, relativePath.Replace('\\', Path.DirectorySeparatorChar)));
+		}
 	}
 }
