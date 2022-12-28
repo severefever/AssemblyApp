@@ -6,7 +6,7 @@ namespace JsonTestApp
 	public class JsonCommand : ICommand
 	{
 		public string Name { get => "Newest version of Json"; }
-		public string Description { get => "Version is 1.0.2"; }
+		public string Description { get => GetVersion(); }
 		public int Execute()
 		{
 			Person person = new Person();
@@ -17,6 +17,15 @@ namespace JsonTestApp
 			Console.WriteLine($"Name: {Name}\t Description: {Description}");
 			Console.WriteLine(json);
 			return 0;
+		}
+		private string? GetVersion()
+		{
+			foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				if (asm.GetName().Name == "Newtonsoft.Json")
+					return asm.GetName().Version.ToString();
+			}
+			return null;
 		}
 	}
 

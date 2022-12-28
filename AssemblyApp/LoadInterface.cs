@@ -43,7 +43,7 @@ namespace AssemblyApp
 		{
 			_plugin.Unload();
 		}
-		private string GetFullPath(string relativePath)
+		private static string GetFullPath(string relativePath)
 		{
 			// Navigate up to the solution root
 			string root = Path.GetFullPath(Path.Combine(
